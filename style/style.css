@@ -124,6 +124,10 @@ header .wrap p {
     border: 1px solid #14b37d;
 }
 
+.container form .field input.error {
+    border: 1px solid #e63946;
+}
+
 
 /* select option */
 
@@ -238,7 +242,13 @@ header .wrap p {
 /* message */
 
 .message {
+    position: absolute;
+    top: -25px;
+    right: 0;
+    text-align: right;
+    font-size: 12px;
     margin: 10px 0 20px;
+    z-index: 1000;
     color: red;
 }
 
