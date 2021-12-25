@@ -1,87 +1,128 @@
-
-// Đối tượng Validator
-
-let check;
-
+// Đối tượng `Validator`
 function Validator(options) {
+  function getParent(element, selector) {
+    while (element.parentElement) {
+      if (element.parentElement.matches(selector)) {
+        return element.parentElement;
+      }
+      element = element.parentElement;
+    }
+  }
 
-    let formElement = document.querySelector(options.form);
+  var selectorRules = {};
 
-    function valid(messageError, messageElement) {
+  // Hàm thực hiện validate
+  function validate(inputElement, rule) {
+    var errorElement = getParent(
+      inputElement,
+      options.formGroupSelector
+    ).querySelector(options.errorSelector);
+    var errorMessage;
 
-        if (messageError) {
-            messageElement.innerText = messageError;
-            check = false;
-        }
-        else {
-            messageElement.innerText = "";
-            check = true;
-        }
+    // Lấy ra các rules của selector
+    var rules = selectorRules[rule.selector];
 
+    // Lặp qua từng rule & kiểm tra
+    // Nếu có lỗi thì dừng việc kiểm
+    for (var i = 0; i < rules.length; ++i) {
+      switch (inputElement.type) {
+        case "radio":
+        case "checkbox":
+          errorMessage = rules[i](
+            formElement.querySelector(rule.selector + ":checked")
+          );
+          break;
+        default:
+          errorMessage = rules[i](inputElement.value);
+      }
+      if (errorMessage) break;
     }
 
-    if (formElement) {
-
-        options.rules.forEach(function (rule) {
-
-            let inputElement = formElement.querySelector(rule.selector);
-            console.log(rule.selector);
-
-            if (inputElement) {
-                inputElement.addEventListener('blur', function () {
-
-                    //value: inputElement.value
-                    //truyền value vào hàm valid cho nó xử lí
-                    //kết quả xử lí sẽ trả về lỗi cho messageError.
-                    //messageError sẽ được truyền vào trong valid để hiển thị lỗi
-
-                    let value = inputElement.value;
-                    let messageError = rule.test(value);
-
-                    console.log(inputElement);
-                    if (messageError !== undefined) {
-                        inputElement.classList.add('error');
-                    } else {
-                        inputElement.classList.remove('error');
-
-                    }
-
-                    let messageElement = inputElement.parentElement.querySelector(options.messageElement);
-
-                    valid(messageError, messageElement);
-
-
-
-                })
-
-                inputElement.addEventListener('focus', function () {
-                    let messageElement = inputElement.parentElement.querySelector(options.messageElement);
-                    inputElement.classList.remove('error');
-                    valid('', messageElement);
-
-                })
-
-                inputElement.addEventListener('input', function () {
-
-                    if (inputElement.id == 'password-confirmation') {
-
-                        let value = inputElement.value;
-                        let messageError = rule.test(value);
-                        let messageElement = inputElement.parentElement.querySelector(options.messageElement);
-                        valid(messageError, messageElement);
-                    }
-                })
-            }
-        })
+    if (errorMessage !== undefined) {
+      inputElement.classList.add("error");
+    } else {
+      inputElement.classList.remove("error");
     }
 
+    if (errorMessage) {
+      errorElement.innerText = errorMessage;
+      getParent(inputElement, options.formGroupSelector).classList.add(
+        "invalid"
+      );
+      getParent(inputElement, options.formGroupSelector).classList.remove(
+        "valid"
+      );
+    } else {
+      errorElement.innerText = "";
+      getParent(inputElement, options.formGroupSelector).classList.remove(
+        "invalid"
+      );
+      getParent(inputElement, options.formGroupSelector).classList.add("valid");
+    }
 
+    return !errorMessage;
+  }
+
+  // Lấy element của form cần validate
+  var formElement = document.querySelector(options.form);
+  let btnSubmit = document.querySelector(".btn-info");
+  if (btnSubmit) {
+    // Khi submit form
+    btnSubmit.onclick = function (e) {
+      var isFormValid = true;
+
+      // Lặp qua từng rules và validate
+      options.rules.forEach(function (rule) {
+        var inputElement = formElement.querySelector(rule.selector);
+        var isValid = validate(inputElement, rule);
+        if (!isValid) {
+          isFormValid = false;
+        }
+      });
+
+      if (isFormValid) {
+        showInfo();
+      }
+    };
+
+    // Lặp qua mỗi rule và xử lý (lắng nghe sự kiện blur, input, ...)
+    options.rules.forEach(function (rule) {
+      // Lưu lại các rules cho mỗi input
+      if (Array.isArray(selectorRules[rule.selector])) {
+        selectorRules[rule.selector].push(rule.test);
+      } else {
+        selectorRules[rule.selector] = [rule.test];
+      }
+
+      var inputElements = formElement.querySelectorAll(rule.selector);
+
+      Array.from(inputElements).forEach(function (inputElement) {
+        // Xử lý trường hợp blur khỏi input
+        inputElement.onblur = function () {
+          validate(inputElement, rule);
+        };
+
+        // Xử lý mỗi khi người dùng nhập vào input
+        inputElement.oninput = function () {
+          var errorElement = getParent(
+            inputElement,
+            options.formGroupSelector
+          ).querySelector(options.errorSelector);
+          errorElement.innerText = "";
+          inputElement.classList.remove("error");
+          getParent(inputElement, options.formGroupSelector).classList.remove(
+            "invalid"
+          );
+        };
+
+      });
+    });
+  }
 }
-
 
 // Định nghĩa các rules
 // Nguyên tắc của các rules:
-//      Required: Nhận giá trị value, trả về message lỗi nếu value = '' ngược lại 
+//      Required: Nhận giá trị value, trả về message lỗi nếu value = '' ngược lại
 //              trả về undefined
 //      Email: Dùng regex để kiểm tra và trả về như required
 //      minLength: Nhận giá trị của value, tính length so sánh với 'min'
@@ -90,127 +131,36 @@ function Validator(options) {
 //      isScore: điểm phải bé hơn = 10 và lớn =0 là số
 //      isName: không có khoảng trắng 2 bên, dùng trim để xử lí, tất cả là chữ.
 //      isNumber: Là số và không chứa số âm
-Validator.isRequired = function (selector) {
 
-    return {
-        selector: selector,
-        test: function (value) {
+Validator.isRequired = function (selector, message) {
+  return {
+    selector: selector,
+    test: function (value) {
+      return value ? undefined : message || "Vui lòng nhập trường này";
+    },
+  };
+};
 
-            return value ? undefined : 'Không được bỏ trống trường này!';
-
-        }
-    }
-}
-
-Validator.isEmail = function (selector) {
-
-    return {
-        selector: selector,
-        test: function (value) {
-
-            //Regex cho email có cả unicode
-
-            let regex = /^(([^<>()[\]\.,;:\s@\"]+(\.[^<>()[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
-
-            return regex.test(value) ? undefined : "Email không hợp lệ!";
-        }
-    }
-
-}
-
-Validator.minLength = function (selector, min) {
-    return {
-        selector: selector,
-        test: function (value) {
-
-            return value.length >= min ? undefined : `Trường này phải có ít nhất ${min} kí tự!`;
-
-        }
-    }
-}
-
-Validator.checkPassword = function (form, selector, password) {
-    return {
-        selector: selector,
-        test: function (value) {
-
-            let formElement = document.querySelector(form);
-            return value == formElement.querySelector(password).value ? undefined : 'Mật khẩu không chính xác!';
-
-        }
-    }
-}
-Validator.checkPhone = function (selector) {
-    return {
-        selector: selector,
-        test: function (value) {
-            //Regex cho số điẹn thoại.
-            // (123) 456-7890
-            // (123)456-7890
-            // 123-456-7890
-            // 123.456.7890
-            // 1234567890
-            // +31636363634
-            // 075-63546725
-
-            let regex = /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/im;
-            return regex.test(value) ? undefined : 'Định dạng số điện thoại không đúng!';
-        }
-    }
-}
 Validator.isMSSV = function (selector, message) {
-    return {
-        selector: selector,
-        test: function (value) {
-            let regex = /PS\d{5}/;
-            value = value.toUpperCase();
-            return regex.test(value) ? undefined : 'Mã số sinh viên phải có dạng PSXXXXX';
-        }
-    }
-}
+  return {
+    selector: selector,
+    test: function (value) {
+      let regex = /PS\d{5}/;
+      value = value.toUpperCase();
+      return regex.test(value)
+        ? undefined
+        : "Mã số sinh viên phải có dạng PSXXXXX";
+    },
+  };
+};
 
 Validator.isName = function (selector) {
-
-    return {
-        selector: selector,
-        test: function (value) {
-            let regex = /^[a-zA-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƠàáâãèéêìíòóôõùúăđĩũơƯĂẠẢẤẦẨẪẬẮẰẲẴẶẸẺẼỀỀỂẾưăạảấầẩẫậắằẳẵặẹẻẽềềểếỄỆỈỊỌỎỐỒỔỖỘỚỜỞỠỢỤỦỨỪễệỉịọỏốồổỗộớờởỡợụủứừỬỮỰỲỴÝỶỸửữựỳỵỷỹ\s\W|_]+$/;
-            return regex.test(value) ? undefined : 'Tên không phù hợp!';
-        }
-    }
-}
-
-Validator.isScore = function (selector) {
-    return {
-        selector: selector,
-        test: function (value) {
-            let regex = /\d+/;
-            return regex.test(value) ? undefined : 'Điểm chỉ chứa số!';
-        }
-
-    }
-}
-
-Validator.isNumber = function (selector) {
-    return {
-        selector: selector,
-        test: function (value) {
-            if (parseFloat(value) && parseFloat(value) > 0) {
-                return undefined;
-            }
-            else {
-                return `Trường này chỉ chứa số và không được âm!`;
-            }
-        }
-    }
-}
-
-Validator.isCMND = function (selector) {
-    return {
-        selector: selector,
-        test: function (value) {
-            let regex = /\d{9}/;
-            return regex.test(value) ? undefined : 'Không đúng định dạng CMND';
-        }
-    }
-}
+  return {
+    selector: selector,
+    test: function (value) {
+      let regex =
+        /^[a-zA-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƠàáâãèéêìíòóôõùúăđĩũơƯĂẠẢẤẦẨẪẬẮẰẲẴẶẸẺẼỀỀỂẾưăạảấầẩẫậắằẳẵặẹẻẽềềểếỄỆỈỊỌỎỐỒỔỖỘỚỜỞỠỢỤỦỨỪễệỉịọỏốồổỗộớờởỡợụủứừỬỮỰỲỴÝỶỸửữựỳỵỷỹ\s\W|_]+$/;
+      return regex.test(value) ? undefined : "Tên không phù hợp!";
+    },
+  };
+};

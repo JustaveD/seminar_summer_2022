@@ -22,42 +22,34 @@
     </header>
 
     <div class="information">
-       
+
     </div>
 
     <div class="container">
-
-
+        <div class="message"></div>
 
         <form class="form-info" id='form-info'>
-            
-
 
             <div class="field uppercase">
-                <p class="message">
-                </p>
+                <p class="message"></p>
                 <input type="text" name="id" id="id" placeholder=" " required autocomplete='off'>
                 <label for=""><span>Mã sinh viên</span></label>
             </div>
             <div class="field capitalize">
-                <p class="message">
-                </p>
+                <p class="message"></p>
                 <input type="text" name="name" id="name" placeholder=" " required autocomplete='off'>
                 <label for=""><span>Họ và tên</span></label>
             </div>
 
-            <div class="custom-select" style="width:100%; height: 50px;">
-            <p class="message">
-                @@
-                </p>
-                <select name='department'>
-                  <option value="">Chuyên ngành:</option>
-                  <option value="1">TKT</option>
-                  <option value="2">BMW</option>
-                  <option value="3">Citroen</option>
-                  <option value="4">Ford</option>
-                  <option value="5">Honda</option>
-                  
+            <div class="custom-select field" style="width:100%; height: 50px;">
+                <p class="message"></p>
+                <select name='department' onclick="alert('avav')">
+                    <option value="">Chuyên ngành:</option>
+                    <option value="1">TKT</option>
+                    <option value="2">BMW</option>
+                    <option value="3">Citroen</option>
+                    <option value="4">Ford</option>
+                    <option value="5">Honda</option>
                 </select>
 
             </div>
@@ -115,23 +107,29 @@
     <script src="./app/select.js"></script>
     <!-- sortable JS libraries -->
     <script src="./vendor/Sortable-master/Sortable.min.js"></script>
-    <!-- <script src="./app/ajax/validation.js"></script> -->
+    <script src="./app/ajax/formInfo.js"></script>
     <script src="./app/script.js"></script>
 
     <!-- validation -->
     <script src="./app/validator.js"></script>
     <script>
-          Validator({
-              form: '#form-info',
-              messageElement: '.message',
-              rules: [
+        Validator({
+            form: '#form-info',
+            formGroupSelector: ".field",
+            errorSelector: '.message',
+            rules: [
                 Validator.isName('#name'),
-                Validator.isMSSV('#id') 
-              ]
-          })
-         
-          
-      </script>
+                Validator.isMSSV('#id'),
+                Validator.isRequired("select[name='department']", "Vui lòng chọn chuyên ngành"),
+            ]
+        })
+
+        let select = document.querySelector(".select-selected");
+        select.addEventListener("click", () => {
+            select.previousElementSibling.previousElementSibling.innerText = "";
+        });
+    </script>
+    <script src="./app/ajax/submitResult.js"></script>
 </body>
 
 </html>
