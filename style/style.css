@@ -39,6 +39,25 @@ header .wrap p {
     color: #fff;
 }
 
+header .navigation {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-direction: column;
+}
+
+header .navigation a {
+    text-decoration: none;
+    color: #fff;
+    font-size: 18px;
+    margin-top: 5px;
+    font-weight: bold;
+}
+
+header .navigation a:hover {
+    color: rgb(247, 247, 73);
+}
+
 .container {
     width: 90%;
     display: flex;
@@ -319,7 +338,7 @@ header .wrap p {
     border: 1px solid #119462;
     padding: 10px;
     user-select: none;
-    word-break: break-all;
+    word-break: normal;
     margin-bottom: 10px;
     flex-direction: column;
     font-weight: bold;
@@ -354,6 +373,13 @@ header .wrap p {
 
 .answer p {
     text-align: left;
+}
+
+.backend-error {
+    font-size: 14px;
+    color: #e63946;
+    text-align: left;
+    margin-bottom: 15px;
 }
 
 

@@ -1,23 +1,31 @@
+<?php 
+    require "./dao/pdo.php";
+?>
 <!DOCTYPE html>
 <html lang="en">
+
 
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>information</title>
+    <title>Trang chủ</title>
 
     <!-- Custom CSS -->
     <link rel="stylesheet" href="./style/style.css">
+    
 </head>
 
 <body>
     <header>
         <div class="wrap">
-            <div class="logo">
+            <a class="logo" href='./'>
                 <img src="./access/images/logo.png" alt="">
+            </a>
+            <div class='navigation'>
+                <p>Seminar Summer 2022</p>
+                <a href="./ranked/">Bảng xếp hạng</a>
             </div>
-            <p>Seminar Summer 2022</p>
         </div>
     </header>
 
@@ -26,10 +34,9 @@
     </div>
 
     <div class="container">
-        <div class="message"></div>
 
         <form class="form-info" id='form-info'>
-
+            <div class="backend-error"></div>
             <div class="field uppercase">
                 <p class="message"></p>
                 <input type="text" name="id" id="id" placeholder=" " required autocomplete='off'>
@@ -43,13 +50,20 @@
 
             <div class="custom-select field" style="width:100%; height: 50px;">
                 <p class="message"></p>
-                <select name='department' onclick="alert('avav')">
+                <select name='department'>
                     <option value="">Chuyên ngành:</option>
-                    <option value="1">TKT</option>
-                    <option value="2">BMW</option>
-                    <option value="3">Citroen</option>
-                    <option value="4">Ford</option>
-                    <option value="5">Honda</option>
+                    <?php
+                        $sql = "select * from departments";
+
+                        $allDepartments = pdo_get_all_rows($sql);
+
+                        foreach($allDepartments as $department){
+                            extract($department);
+                            echo "<option value='{$department_id}'>{$department_name}</option>";
+                        }
+                    
+                   
+                    ?>
                 </select>
 
             </div>
@@ -63,40 +77,7 @@
 
         <div class="form_question">
 
-            <div class="question">
-                <p>
-                    <span>Câu hỏi:</span> ABCXYZ?asdfjkasdfjks kls adj fkls adjfklo dasjf klasd jfkl sdj ak l fjasdkljfklasdj
-                </p>
-            </div>
-            <p class="instructions">Sắp xếp các câu trả lời theo thứ tự đúng nhất! </p>
-            <div class="answer_wrapper">
-                <div class="answer">
-                    <p>A Lorem ipsum dolor sit amet consectetur adipisicing elit. Adipisci, eaque?</p>
-                </div>
-                <div class="answer">
-                    <p>C</p>
-                </div>
-                <div class="answer">
-                    <p>Bsdflsdflkasdlk</p>
-                </div>
-                <div class="answer">
-                    <p>Y</p>
-                </div>
-                <div class="answer">
-                    <p>Z</p>
-                </div>
-                <div class="answer">
-                    <p>Y</p>
-                </div>
-                <div class="answer">
-                    <p>Z</p>
-                </div>
-                <div class="answer">
-                    <p>Y</p>
-                </div>
-            </div>
-
-            <div class="button btn-finish"><span>Hoàn thành</span></div>
+           
 
         </div>
 
@@ -105,8 +86,8 @@
 
     <!-- Custom JS file -->
     <script src="./app/select.js"></script>
-    <!-- sortable JS libraries -->
-    <script src="./vendor/Sortable-master/Sortable.min.js"></script>
+    <!-- Sortable libraries -->
+    <script src='./vendor/Sortable-master/Sortable.min.js'></script>
     <script src="./app/ajax/formInfo.js"></script>
     <script src="./app/script.js"></script>
 
@@ -129,7 +110,7 @@
             select.previousElementSibling.previousElementSibling.innerText = "";
         });
     </script>
-    <script src="./app/ajax/submitResult.js"></script>
+    
 </body>
 
 </html>
